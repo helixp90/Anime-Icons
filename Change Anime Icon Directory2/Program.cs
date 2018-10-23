@@ -40,7 +40,7 @@ namespace Change_Anime_Icon_Directory
 
         private static void AddIcons()
         {
-            
+            int start, end;
         }
 
         private static void ChangeIcons()
