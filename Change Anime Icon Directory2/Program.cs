@@ -12,9 +12,11 @@ namespace Change_Anime_Icon_Directory
 
         static void Main(string[] args)
         {
-            Console.WriteLine($"Press 1 to add; 2 to update...");
+            Console.WriteLine($"Press 1 to add; 2 to update...\n");
 
-            var key = Console.ReadKey();
+            var key = Console.ReadKey().KeyChar;
+
+            //Console.Write(key.ToString());
 
             if (key.ToString() == "1")
             {
@@ -23,7 +25,7 @@ namespace Change_Anime_Icon_Directory
 
             else if (key.ToString() == "2")
             {
-                ChangeIcons();
+                UpdateIcons();
             }
 
             else
@@ -32,18 +34,18 @@ namespace Change_Anime_Icon_Directory
             }
             
 
-            Console.WriteLine($"Press any key to terminate...");
+            Console.WriteLine($"\nPress any key to terminate...");
             Console.ReadKey();
 
 
         }
 
-        private static void AddIcons()
+        private static void AddIcons() //for adding folders with icons for the 1st time
         {
-            int start, end;
+            //int start, end;
         }
 
-        private static void ChangeIcons()
+        private static void UpdateIcons() //for updating folder icons to new directory
         {
             int start, end;
             string filedir = Environment.CurrentDirectory, olddir = null, newdir = null;
@@ -53,7 +55,7 @@ namespace Change_Anime_Icon_Directory
             foreach (string deskini in Ini)
             {
                 File.SetAttributes(deskini, FileAttributes.Archive);
-
+                
                 foreach (var line in File.ReadAllLines(deskini))
                 {
                     if (line.Contains("IconResource"))
@@ -87,7 +89,7 @@ namespace Change_Anime_Icon_Directory
 
                         newdir = File.ReadAllText(deskini);
 
-                        newdir = newdir.Replace(line, "IconResource=" + filedir + "\\" + olddir);
+                        newdir = newdir.Replace(line, "IconResource=" + filedir + "\\" + olddir + ",0");
 
                         File.WriteAllText(deskini, newdir, Encoding.Unicode);
 
