@@ -100,6 +100,8 @@ namespace Change_Anime_Icon_Directory //This program assumes: 1.) Icon Folder is
 
                         File.WriteAllLines(path + @"\desktop.ini", lines, UnicodeEncoding.Unicode);                     //Creates a desktop ini
                         File.SetAttributes(path + @"\desktop.ini", FileAttributes.Hidden);
+
+                        
                     }
 
                     else
@@ -209,7 +211,7 @@ namespace Change_Anime_Icon_Directory //This program assumes: 1.) Icon Folder is
 
                         newdir = File.ReadAllText(deskini);
 
-                        newdir = newdir.Replace(line, "IconResource=" + filedir + olddir + ",0"); // gets too much slashes when parent
+                        newdir = newdir.Replace(line, "IconResource=" + filedir + "\\" + olddir + ",0"); // gets too much slashes when parent
 
                         File.WriteAllText(deskini, newdir, Encoding.Unicode);
 
