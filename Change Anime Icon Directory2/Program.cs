@@ -78,11 +78,14 @@ namespace Change_Anime_Icon_Directory //This program assumes: 1.) Icon Folder is
 
                     icon = Directory.GetFiles(filedir, anime + ".ico", SearchOption.AllDirectories);                         // finds the icon file with the same name as the directory
 
-                    Console.WriteLine("\n\n" + icon);
+                    //Console.WriteLine("\n\n" + filedir);
+                    Console.WriteLine("\n\nICON:" + icon.First());                                  
 
                     ini = Directory.EnumerateFiles(path, "desktop.ini", SearchOption.AllDirectories); // check if directory has "desktop.ini"
 
-                    foreach (var y in ini)
+                    
+
+                    foreach (var y in icon)
                     {
                         Console.WriteLine("\n\nINI:" + y);
                     }
@@ -92,7 +95,7 @@ namespace Change_Anime_Icon_Directory //This program assumes: 1.) Icon Folder is
                     {
                         Console.WriteLine("NULL");
 
-                        lines = new string[] { "[ViewState]", "Mode=", "Vid=", "FolderType=Videos", "[.ShellClassInfo]", "IconResource=" + icon + ",0" };
+                        lines = new string[] { "[ViewState]", "Mode=", "Vid=", "FolderType=Videos", "[.ShellClassInfo]", "IconResource=" + icon.First() + ",0" };
 
 
                         File.WriteAllLines(path + @"\desktop.ini", lines, UnicodeEncoding.Unicode);                     //Creates a desktop ini
