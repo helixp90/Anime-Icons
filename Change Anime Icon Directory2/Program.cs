@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Change_Anime_Icon_Directory
+namespace Change_Anime_Icon_Directory //This program assumes: 1.) Icon Folder is located outside of Anime Folder; 2.) Icon and Anime Folder have the same name
 {
     class Program
     {
@@ -52,80 +52,111 @@ namespace Change_Anime_Icon_Directory
         private static void AddIcons() //for adding folders with icons for the 1st time
         {
             int start, end;
-            string filedir = Environment.CurrentDirectory, olddir = null, newdir = null, anime;
+            string filedir = Environment.CurrentDirectory, olddir = null, newdir = null, anime = null;
 
-            string[] foldername = null;
+            string[] foldername = null, lines = { }, icon = null;
 
             IEnumerable<string> ini = null;
 
-            foldername = Directory.GetDirectories(filedir, "*", SearchOption.AllDirectories); // * denotes all (i think)
+            foldername = Directory.GetDirectories(filedir, "*", SearchOption.AllDirectories); // * gets all directories and subdirectories
 
-            foreach (var x in foldername)
+            foreach (var path in foldername)                                                    // iterates the list of directories
             {
-                anime = Path.GetFileName(x);
-
-                Console.WriteLine(anime);
-
-                ini = Directory.EnumerateFiles(Path.GetDirectoryName(x), "desktop.ini", SearchOption.AllDirectories);
-
-                Console.WriteLine(ini);
-
-                foreach (var deskini in ini)
+                if (Path.GetFileNameWithoutExtension(path).Contains("icons") == false)
                 {
-                    File.SetAttributes(deskini, FileAttributes.Archive);
+                    
+                
+                    Console.WriteLine(path);
 
-                    foreach (var line in File.ReadAllLines(deskini))
+                    anime = Path.GetFileNameWithoutExtension(path);                                                // gets the filename of the directory
+
+                    Console.WriteLine("\n\n" + anime);
+
+                    //path = Path.GetDirectoryName(x);                                                           // get the directory name of the file
+
+                    //Console.WriteLine(path);
+
+                    icon = Directory.GetFiles(filedir, anime + ".ico", SearchOption.AllDirectories);                         // finds the icon file with the same name as the directory
+
+                    Console.WriteLine("\n\n" + icon);
+
+                    ini = Directory.EnumerateFiles(path, "desktop.ini", SearchOption.AllDirectories); // check if directory has "desktop.ini"
+
+                    foreach (var y in ini)
                     {
-                        if (line.Contains("IconResource"))
-                        {
-                            start = line.IndexOf("icons");
-
-                            Console.WriteLine(line);
-                            Console.WriteLine(line.Length.ToString());
-                            Console.WriteLine(line.IndexOf("icons").ToString());
-
-                            if (line.Contains(","))
-                            {
-                                end = line.IndexOf(",");
-
-                                olddir = line.Substring(start, (end - start));
-
-                                Console.Write(end - start);
-                            }
-
-                            else
-                            {
-                                end = line.Length - 1;
-
-                                Console.Write(end);
-
-                                olddir = line.Substring(start, (end - start + 1));
-
-                                Console.Write(end - start);
-                            }
-
-                            Console.WriteLine("\n" + filedir);
-
-                            newdir = File.ReadAllText(deskini);
-
-                            newdir = newdir.Replace(line, "IconResource=" + filedir + olddir + ",0"); // gets too much slashes when parent
-
-                            File.WriteAllText(deskini, newdir, Encoding.Unicode);
-
-                            Console.WriteLine("\n" + olddir);
-                            Console.WriteLine("\n" + newdir);
-
-                        }
-
-                        else
-                        {
-
-                        }
-
+                        Console.WriteLine("\n\nINI:" + y);
                     }
 
-                    File.SetAttributes(deskini, FileAttributes.Hidden);
-                }
+
+                    if (ini.Count() == 0)                                                                                      // if there's no desktop.ini file... create one
+                    {
+                        Console.WriteLine("NULL");
+
+                        lines = new string[] { "[ViewState]", "Mode=", "Vid=", "FolderType=Videos", "[.ShellClassInfo]", "IconResource=" + icon + ",0" };
+
+
+                        File.WriteAllLines(path + @"\desktop.ini", lines, UnicodeEncoding.Unicode);                     //Creates a desktop ini
+                        File.SetAttributes(path + @"\desktop.ini", FileAttributes.Hidden);
+                    }
+
+                    else
+                    {
+                        Console.WriteLine("NOT NULL");
+
+                        foreach (var deskini in ini)
+                        {
+                            File.SetAttributes(deskini, FileAttributes.Archive);
+
+                            foreach (var line in File.ReadAllLines(deskini))
+                            {
+                                if (line.Contains("IconResource"))
+                                {
+                                    start = line.IndexOf("icons");
+
+                                    Console.WriteLine(line);
+                                    Console.WriteLine(line.Length.ToString());
+                                    Console.WriteLine(line.IndexOf("icons").ToString());
+
+                                    if (line.Contains(","))
+                                    {
+                                        end = line.IndexOf(",");
+
+                                        olddir = line.Substring(start, (end - start));
+
+                                        Console.Write(end - start);
+                                    }
+
+                                    else
+                                    {
+                                        end = line.Length - 1;
+
+                                        Console.Write(end);
+
+                                        olddir = line.Substring(start, (end - start + 1));
+
+                                        Console.Write(end - start);
+                                    }
+
+                                    Console.WriteLine("\n" + filedir);
+
+                                    newdir = File.ReadAllText(deskini);
+
+                                    newdir = newdir.Replace(line, "IconResource=" + filedir + "\\" + olddir + ",0"); // gets too much slashes when parent
+
+                                    File.WriteAllText(deskini, newdir, Encoding.Unicode);
+
+                                    Console.WriteLine("\n" + olddir);
+                                    Console.WriteLine("\n" + newdir);
+
+                                }
+
+                            }
+
+                            File.SetAttributes(deskini, FileAttributes.Hidden);
+                        }
+
+                 }
+                    }
             }
         }
 
