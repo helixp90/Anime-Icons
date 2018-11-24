@@ -3,11 +3,56 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Reflection;
+using System.Runtime.InteropServices;
+
+public enum FolderCustomSettingsMask : uint
+{
+    InfoTip = 0x00000004,
+    Clsid = 0x00000008,
+    IconFile = 0x00000010,
+    Logo = 0x00000020,
+    Flags = 0x00000040
+}
+
+public enum FolderCustomSettingsRW : uint
+{
+    Read = 0x00000001,
+    ForceWrite = 0x00000002,
+    ReadWrite = Read | ForceWrite
+}
+
+
+
 
 namespace Change_Anime_Icon_Directory //This program assumes: 1.) Icon Folder is located outside of Anime Folder; 2.) Icon and Anime Folder have the same name
 {
     class Program
     {
+
+        //[SecurityCritical]
+        [DllImport("Shell32.dll", CharSet = CharSet.Auto)]
+        static extern uint SHGetSetFolderCustomSettings(ref SHFOLDERCUSTOMSETTINGS pfcs, string pszPath, FolderCustomSettingsRW dwReadWrite);
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        struct SHFOLDERCUSTOMSETTINGS
+        {
+            public uint dwSize;
+            public FolderCustomSettingsMask dwMask;
+            public IntPtr pvid;
+            public string pszWebViewTemplate;
+            public uint cchWebViewTemplate;
+            public string pszWebViewTemplateVersion;
+            public string pszInfoTip;
+            public uint cchInfoTip;
+            public IntPtr pclsid;
+            public uint dwFlags;
+            public string pszIconFile;
+            public uint cchIconFile;
+            public int iIconIndex;
+            public string pszLogo;
+            public uint cchLogo;
+        }
 
 
         static void Main(string[] args)
@@ -95,20 +140,50 @@ namespace Change_Anime_Icon_Directory //This program assumes: 1.) Icon Folder is
                     {
                         Console.WriteLine("NULL");
 
-                        lines = new string[] { "[ViewState]", "Mode=", "Vid=", "FolderType=Videos", "[.ShellClassInfo]", "IconResource=" + icon.First() + ",0" };
+                        /*lines = new string[] { "[ViewState]", "Mode=", "Vid=", "FolderType=Videos", "[.ShellClassInfo]", "IconResource=" + icon.First() + ",0" };
 
 
                         File.WriteAllLines(path + @"\desktop.ini", lines, UnicodeEncoding.Unicode);                     //Creates a desktop ini
+                        File.SetAttributes(path + @"\desktop.ini", FileAttributes.Hidden);*/
+
+                        SHFOLDERCUSTOMSETTINGS FolderSettings = new SHFOLDERCUSTOMSETTINGS
+                        {
+                            dwMask = FolderCustomSettingsMask.IconFile,
+                            pszIconFile = icon.First(),
+                            iIconIndex = 0
+                        };
+
+                        uint hResult = SHGetSetFolderCustomSettings(
+                            ref FolderSettings, path + char.MinValue, FolderCustomSettingsRW.ForceWrite);
+
+                        Console.WriteLine(hResult);
+
+                              
                         File.SetAttributes(path + @"\desktop.ini", FileAttributes.Hidden);
 
-                        
                     }
 
                     else
                     {
                         Console.WriteLine("NOT NULL");
 
-                        foreach (var deskini in ini)
+                        File.SetAttributes(path + @"\desktop.ini", FileAttributes.Archive);
+
+                        SHFOLDERCUSTOMSETTINGS FolderSettings = new SHFOLDERCUSTOMSETTINGS
+                        {
+                            dwMask = FolderCustomSettingsMask.IconFile,
+                            pszIconFile = icon.First(),
+                            iIconIndex = 0
+                        };
+
+                        uint hResult = SHGetSetFolderCustomSettings(
+                            ref FolderSettings, path + char.MinValue, FolderCustomSettingsRW.ForceWrite);
+
+                        Console.WriteLine(hResult);
+
+                        File.SetAttributes(path + @"\desktop.ini", FileAttributes.Hidden);
+
+                        /*foreach (var deskini in ini)
                         {
                             File.SetAttributes(deskini, FileAttributes.Archive);
 
@@ -158,9 +233,9 @@ namespace Change_Anime_Icon_Directory //This program assumes: 1.) Icon Folder is
                             }
 
                             File.SetAttributes(deskini, FileAttributes.Hidden);
-                        }
+                        }*/
 
-                 }
+                    }
                     }
             }
         }
