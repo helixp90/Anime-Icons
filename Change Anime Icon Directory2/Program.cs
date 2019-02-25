@@ -60,7 +60,30 @@ namespace Change_Anime_Icon_Directory //This program assumes: 1.) Icon Folder is
 
         static void Main(string[] args)
         {
+            Console.Write("Press 1 to affect 1 folder, 2 to affect multiple folders\n");
 
+            char key = Console.ReadKey().KeyChar;
+
+            switch (key)
+            {
+                case '1': change();
+                    break;
+
+                case '2': changeAll();
+                    break;
+
+                default: Console.WriteLine("DUMBASS");
+                    break;
+                   
+            }
+
+            Console.WriteLine("\n\nPress any key to exit.");
+            Console.ReadKey();
+
+        }
+
+        static void change()
+        {
             string filedir = Environment.CurrentDirectory, anime = null;
 
             string[] foldername = null, lines = { }, icon = null;
@@ -69,7 +92,7 @@ namespace Change_Anime_Icon_Directory //This program assumes: 1.) Icon Folder is
 
             foldername = Directory.GetDirectories(filedir, "*", SearchOption.AllDirectories); // * gets all directories and subdirectories
 
-            Console.WriteLine("Starting...");
+            Console.WriteLine("\n\nStarting solo...");
             Thread.Sleep(3000);
 
             try
@@ -80,22 +103,22 @@ namespace Change_Anime_Icon_Directory //This program assumes: 1.) Icon Folder is
                     {
 
 
-                        Console.WriteLine("\nFolder path: " + path);                              
+                        Console.WriteLine("\nFolder path: " + path);
 
 
                         anime = Path.GetFileName(path).Replace(".ico", "");                          // gets the filename of the directory
 
                         Console.WriteLine("\nAnime: " + anime);
 
-                       
+
 
                         icon = Directory.GetFiles(filedir, anime + ".ico", SearchOption.AllDirectories);                         // finds the icon file with the same name as the directory
 
-                        
+
                         Console.WriteLine("\n\nICON: " + icon.First() + "\nlocated at " + path);
 
                         ini = Directory.EnumerateFiles(path, "desktop.ini", SearchOption.AllDirectories);   // check if directory has "desktop.ini"
-                        
+
                         SHFOLDERCUSTOMSETTINGS FolderSettings = new SHFOLDERCUSTOMSETTINGS                  // Create or update desktop.ini using Powershell code
                         {
                             dwMask = FolderCustomSettingsMask.IconFile,
@@ -107,7 +130,7 @@ namespace Change_Anime_Icon_Directory //This program assumes: 1.) Icon Folder is
                             ref FolderSettings, path + char.MinValue, FolderCustomSettingsRW.ForceWrite);  //create or overwrite desktop.ini
 
                         Console.WriteLine("\n==================================================================================================");
-                        
+
                     }
 
 
@@ -118,13 +141,100 @@ namespace Change_Anime_Icon_Directory //This program assumes: 1.) Icon Folder is
             {
                 Console.WriteLine(e);
             }
+        }
 
-            
+        static void changeAll()
+        {
+            var years = Enumerable.Range(1990, 2020 - 1990 + 1).ToList();
 
-            Console.WriteLine("\n\nPress any key to exit.");
-            Console.ReadKey();
+            string filedir = Environment.CurrentDirectory, anime = null, dirfilename = null, animedir = null;
+
+            string[] foldername = null, foldername2 = null, lines = { }, icon = null;
+
+            int number = 0;
+
+            bool success = false;
+
+            IEnumerable<string> ini = null;
+
+            foldername = Directory.GetDirectories(filedir, "*", SearchOption.TopDirectoryOnly); // * gets all directories on current directory
+
+            Console.WriteLine("\n\nStarting Multiple...");
+            Thread.Sleep(3000);
+
+            try
+            {
+                foreach (var x in foldername)                                                    // iterates the list of directories
+                {
+
+                    Console.WriteLine(x);
+
+                    dirfilename = Path.GetFileNameWithoutExtension(x);
+
+                    Console.WriteLine(dirfilename);
+
+                    success = Int32.TryParse(dirfilename, out number);                                     //checks if foldername contains legit integer
 
 
+                    if (success && years.Contains(Int32.Parse(dirfilename)))                                      //checks if folder directory name is a year
+                    {
+                        //animedir = Path.GetDirectoryName(x);
+
+                        Console.WriteLine(animedir);
+
+                        foldername2 = Directory.GetDirectories(x, "*", SearchOption.AllDirectories); //gets all directories of that year
+
+                        foreach (var path in foldername2)
+                        {
+                            if (Path.GetFileNameWithoutExtension(path).Contains("icons") == false)
+                            {
+                                Console.WriteLine("\nFolder path: " + path);
+
+
+                                anime = Path.GetFileName(path).Replace(".ico", "");                          // gets the filename of the directory
+
+                                Console.WriteLine("\nAnime: " + anime);
+
+
+
+                                icon = Directory.GetFiles(x, anime + ".ico", SearchOption.AllDirectories);                         // finds the icon file with the same name as the directory
+
+
+                                Console.WriteLine("\n\nICON: " + icon.First() + "\nlocated at " + path);
+
+                                ini = Directory.EnumerateFiles(path, "desktop.ini", SearchOption.AllDirectories);   // check if directory has "desktop.ini"
+
+                                SHFOLDERCUSTOMSETTINGS FolderSettings = new SHFOLDERCUSTOMSETTINGS                  // Create or update desktop.ini using Powershell code
+                                {
+                                    dwMask = FolderCustomSettingsMask.IconFile,
+                                    pszIconFile = icon.First(),                                                     // desktop.ini folder properties
+                                    iIconIndex = 0
+                                };
+
+                                uint hResult = SHGetSetFolderCustomSettings(
+                                    ref FolderSettings, path + char.MinValue, FolderCustomSettingsRW.ForceWrite);  //create or overwrite desktop.ini
+
+                                Console.WriteLine("\n==================================================================================================");
+
+
+
+                            }
+
+
+                        }
+
+
+
+                    }
+
+
+                }
+            }
+
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
 
     }
